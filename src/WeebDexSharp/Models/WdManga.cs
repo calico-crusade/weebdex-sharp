@@ -86,7 +86,7 @@ public class WdManga : WdMangaBase
 		/// The stats related to the manga
 		/// </summary>
 		[JsonPropertyName("stats")]
-		public MangaStats Stats { get; set; } = new();
+		public WdMangaRating Stats { get; set; } = new();
 
 		/// <summary>
 		/// The person who submitted the manga
@@ -147,36 +147,6 @@ public class WdManga : WdMangaBase
 		/// </summary>
 		[JsonPropertyName("locked")]
 		public bool Locked { get; set; }
-	}
-
-	/// <summary>
-	/// Reprsents stats related to the manga
-	/// </summary>
-	public class MangaStats
-	{
-		/// <summary>
-		/// The number of people who have followed the manga
-		/// </summary>
-		[JsonPropertyName("follows")]
-		public int Follows { get; set; }
-
-		/// <summary>
-		/// The number of people who have viewed the manga
-		/// </summary>
-		[JsonPropertyName("views")]
-		public int Views { get; set; }
-
-		/// <summary>
-		/// The number of people who have sent comments in the manga's thread
-		/// </summary>
-		[JsonPropertyName("replies")]
-		public int Replies { get; set; }
-
-		/// <summary>
-		/// The rating for the manga
-		/// </summary>
-		[JsonPropertyName("rating")]
-		public WdRating Rating { get; set; } = new();
 	}
 
 	/// <summary>

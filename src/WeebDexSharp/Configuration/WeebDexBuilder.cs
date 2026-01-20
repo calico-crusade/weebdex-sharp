@@ -180,6 +180,7 @@ internal class WeebDexBuilder(
 		_services.TryAddTransient<IWdApiAuthorService, WdApiAuthorService>();
 		_services.TryAddTransient<IWdApiChapterService, WdApiChapterService>();
 		_services.TryAddTransient<IWdApiMangaService, WdApiMangaService>();
+		_services.TryAddTransient<IWdApiStatisticsService, WdApiStatisticsService>();
 
 		_services.TryAddTransient<IWdApiService, WdApiService>();
 		_services.TryAddTransient<IWdJsonService, WdJsonService>();

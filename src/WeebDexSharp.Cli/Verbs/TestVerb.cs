@@ -56,6 +56,22 @@ public class TestVerb(
 		return true;
 	}
 
+	public async Task<bool> Stats(CancellationToken token)
+	{
+		var chapter = await _api.Statistics.Chapter("l3nm5fbler");
+		_logger.LogInformation("Chapter Stats: {Data}", _json.Pretty(chapter));
+
+		var manga = await _api.Statistics.Manga("2mkslp3v5e");
+		_logger.LogInformation("Manga Stats: {Data}", _json.Pretty(manga));
+
+		var group = await _api.Statistics.Group("blebj9twem");
+		_logger.LogInformation("Group Stats: {Data}", _json.Pretty(group));
+
+		var user = await _api.Statistics.User("qlo3v9w4ek");
+		_logger.LogInformation("User Stats: {Data}", _json.Pretty(user));
+		return true;
+	}
+
 	#region Internal methods
 	public IEnumerable<MethodInfo> Methods()
 	{

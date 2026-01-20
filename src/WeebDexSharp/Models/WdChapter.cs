@@ -114,7 +114,7 @@ public class WdChapter : WdChapterBase
 		/// The chapter statistics
 		/// </summary>
 		[JsonPropertyName("stats")]
-		public ChapterStats Stats { get; set; } = new();
+		public WdChapterRating Stats { get; set; } = new();
 
 		/// <summary>
 		/// The information about the chapter's comment thread
@@ -152,36 +152,6 @@ public class WdChapter : WdChapterBase
 		[JsonPropertyName("locked")]
 		public bool Locked { get; set; }
 	}
-
-	/// <summary>
-	/// The chapter's stats
-	/// </summary>
-	public class ChapterStats
-	{
-		/// <summary>
-		/// The number of people who have viewed the chapter
-		/// </summary>
-		[JsonPropertyName("views")]
-		public int Views { get; set; }
-
-		/// <summary>
-		/// The number of unique views the chapter has
-		/// </summary>
-		[JsonPropertyName("unique_views")]
-		public int UniqueViews { get; set; }
-
-		/// <summary>
-		/// The number of comments on the chapter
-		/// </summary>
-		[JsonPropertyName("replies")]
-		public int Replies { get; set; }
-
-		/// <summary>
-		/// The number of upvotes on the chapter
-		/// </summary>
-		[JsonPropertyName("up")]
-		public int Up { get; set; }
-	}
 }
 
 /// <summary>
@@ -216,7 +186,7 @@ public class WdChapterPartial : WdChapterBase
 		/// The chapter statistics
 		/// </summary>
 		[JsonPropertyName("stats")]
-		public WdChapter.ChapterStats Stats { get; set; } = new();
+		public WdChapterRating Stats { get; set; } = new();
 
 		/// <summary>
 		/// The manga the chapter belongs to
