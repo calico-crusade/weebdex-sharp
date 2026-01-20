@@ -10,6 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CardboardBox.Extensions" Version="2.0.3" />
 		<PackageReference Include="CardboardBox.Setup" Version="2.0.0" />
 		<PackageReference Include="CsvHelper" Version="33.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />

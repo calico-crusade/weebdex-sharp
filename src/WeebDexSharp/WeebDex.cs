@@ -16,6 +16,9 @@ public interface IWeebDex
 
 	/// <inheritdoc cref="IWdApiStatisticsService" />
 	IWdApiStatisticsService Statistics { get; }
+
+	/// <inheritdoc cref="IWdApiApiClientService"/>
+	IWdApiApiClientService ApiClients { get; }
 }
 
 /// <inheritdoc cref="IWeebDex" />
@@ -23,7 +26,8 @@ public class WeebDex(
 	IWdApiAuthorService _author,
 	IWdApiChapterService _chapter,
 	IWdApiMangaService _manga,
-	IWdApiStatisticsService _stats) : IWeebDex
+	IWdApiStatisticsService _stats,
+	IWdApiApiClientService _apiClients) : IWeebDex
 {
 	/// <inheritdoc />
 	public IWdApiAuthorService Authors { get; } = _author;
@@ -36,6 +40,9 @@ public class WeebDex(
 
 	/// <inheritdoc />
 	public IWdApiStatisticsService Statistics { get; } = _stats;
+	
+	/// <inheritdoc />
+	public IWdApiApiClientService ApiClients { get; } = _apiClients;
 
 	/// <summary>
 	/// Creates an isolated instance of the WeebDex API 

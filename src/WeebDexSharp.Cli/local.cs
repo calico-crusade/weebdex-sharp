@@ -1,4 +1,5 @@
 ﻿global using CardboardBox;
+global using CardboardBox.Extensions;
 global using CardboardBox.Json;
 global using CardboardBox.Setup;
 

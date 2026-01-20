@@ -85,9 +85,32 @@ public interface IWdApiService
 		=> Post<T, WeebDexResponse>(url, data, authRequired, creds, token);
 
 	/// <summary>
-	/// Sends an HTTP POST request to the specified URL with the provided data and returns the deserialized response.
+	/// Fetch an empty response from the given URL
 	/// </summary>
-	/// <typeparam name="TData">The type of the data to serialize and include in the POST request body.</typeparam>
+	/// <typeparam name="T">The type of response</typeparam>
+	/// <param name="url">The URL to fetch from</param>
+	/// <param name="authRequired">Whether or not authentication is required for the request</param>
+	/// <param name="creds">The credentials to use for the request</param>
+	/// <param name="token">The cancellation token</param>
+	/// <returns>The response</returns>
+	Task<T> Post<T>(string url, bool authRequired = false, Credentials? creds = null, CancellationToken token = default)
+		where T : WeebDexResponse => Request<T>(url, HttpMethod.Post, null, authRequired, creds, token);
+
+	/// <summary>
+	/// Fetch an empty response from the given URL
+	/// </summary>
+	/// <param name="url">The URL to fetch from</param>
+	/// <param name="authRequired">Whether or not authentication is required for the request</param>
+	/// <param name="creds">The credentials to use for the request</param>
+	/// <param name="token">The cancellation token</param>
+	/// <returns>The response</returns>
+	Task<WeebDexResponse> Post(string url, bool authRequired = false, Credentials? creds = null, CancellationToken token = default)
+		=> Post<WeebDexResponse>(url, authRequired, creds, token);
+
+	/// <summary>
+	/// Sends an HTTP PUT request to the specified URL with the provided data and returns the deserialized response.
+	/// </summary>
+	/// <typeparam name="TData">The type of the data to serialize and include in the PUT request body.</typeparam>
 	/// <typeparam name="TResp">The type of the response expected from the server. Must inherit from WeebDexResponse.</typeparam>
 	/// <param name="url">The URL to fetch from</param>
 	/// <param name="data">The data for the request</param>
@@ -99,9 +122,9 @@ public interface IWdApiService
 		where TResp : WeebDexResponse => Request<TData, TResp>(url, HttpMethod.Put, data, authRequired, creds, token);
 
 	/// <summary>
-	/// Sends an HTTP POST request to the specified URL with the provided data and returns the deserialized response.
+	/// Sends an HTTP PUT request to the specified URL with the provided data and returns the deserialized response.
 	/// </summary>
-	/// <typeparam name="T">The type of the data to serialize and include in the POST request body.</typeparam>
+	/// <typeparam name="T">The type of the data to serialize and include in the PUT request body.</typeparam>
 	/// <param name="url">The URL to fetch from</param>
 	/// <param name="data">The data for the request</param>
 	/// <param name="authRequired">Whether or not authentication is required for the request</param>
@@ -110,6 +133,29 @@ public interface IWdApiService
 	/// <returns>The response</returns>
 	Task<WeebDexResponse> Put<T>(string url, T data, bool authRequired = false, Credentials? creds = null, CancellationToken token = default)
 		=> Put<T, WeebDexResponse>(url, data, authRequired, creds, token);
+
+	/// <summary>
+	/// Fetch an empty response from the given URL
+	/// </summary>
+	/// <typeparam name="T">The type of response</typeparam>
+	/// <param name="url">The URL to fetch from</param>
+	/// <param name="authRequired">Whether or not authentication is required for the request</param>
+	/// <param name="creds">The credentials to use for the request</param>
+	/// <param name="token">The cancellation token</param>
+	/// <returns>The response</returns>
+	Task<T> Put<T>(string url, bool authRequired = false, Credentials? creds = null, CancellationToken token = default)
+		where T : WeebDexResponse => Request<T>(url, HttpMethod.Put, null, authRequired, creds, token);
+
+	/// <summary>
+	/// Fetch an empty response from the given URL
+	/// </summary>
+	/// <param name="url">The URL to fetch from</param>
+	/// <param name="authRequired">Whether or not authentication is required for the request</param>
+	/// <param name="creds">The credentials to use for the request</param>
+	/// <param name="token">The cancellation token</param>
+	/// <returns>The response</returns>
+	Task<WeebDexResponse> Put(string url, bool authRequired = false, Credentials? creds = null, CancellationToken token = default)
+		=> Put<WeebDexResponse>(url, authRequired, creds, token);
 
 	/// <summary>
 	/// Fetch an empty response from the given URL
@@ -135,9 +181,9 @@ public interface IWdApiService
 		=> Delete<WeebDexResponse>(url, authRequired, creds, token);
 
 	/// <summary>
-	/// Sends an HTTP POST request to the specified URL with the provided data and returns the deserialized response.
+	/// Sends an HTTP DELETE request to the specified URL with the provided data and returns the deserialized response.
 	/// </summary>
-	/// <typeparam name="TData">The type of the data to serialize and include in the POST request body.</typeparam>
+	/// <typeparam name="TData">The type of the data to serialize and include in the DELETE request body.</typeparam>
 	/// <typeparam name="TResp">The type of the response expected from the server. Must inherit from WeebDexResponse.</typeparam>
 	/// <param name="url">The URL to fetch from</param>
 	/// <param name="data">The data for the request</param>
@@ -149,9 +195,9 @@ public interface IWdApiService
 		where TResp : WeebDexResponse => Request<TData, TResp>(url, HttpMethod.Delete, data, authRequired, creds, token);
 
 	/// <summary>
-	/// Sends an HTTP POST request to the specified URL with the provided data and returns the deserialized response.
+	/// Sends an HTTP DELETE request to the specified URL with the provided data and returns the deserialized response.
 	/// </summary>
-	/// <typeparam name="T">The type of the data to serialize and include in the POST request body.</typeparam>
+	/// <typeparam name="T">The type of the data to serialize and include in the DELETE request body.</typeparam>
 	/// <param name="url">The URL to fetch from</param>
 	/// <param name="data">The data for the request</param>
 	/// <param name="authRequired">Whether or not authentication is required for the request</param>
@@ -306,6 +352,9 @@ internal class WdApiService(
 			using var request = await CreateRequest(meta, url, method, content, authRequired, creds);
 			using var response = await DoRequest(meta, request, url, token);
 			data = await HandleResponse<T>(meta, response, url);
+
+			if (_api.ThrowOnError)
+				response.EnsureSuccessStatusCode();
 
 			_events.OnRequestFinished(url, null);
 			watch.Stop();

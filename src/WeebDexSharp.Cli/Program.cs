@@ -1,5 +1,5 @@
 ﻿return await new ServiceCollection()
-	.AddAppSettings()
+	.AddAppSettings(c => c.AddUserSecrets<Program>())
 	.AddSerilog()
 	.AddWeebDex(c => c
 		.WithCredentials<AuthCredentialsService>())

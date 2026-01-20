@@ -72,6 +72,26 @@ public class TestVerb(
 		return true;
 	}
 
+	public async Task<bool> ApiClients(CancellationToken token)
+	{
+		var clients = await _api.ApiClients.Get(token: token);
+		_logger.LogInformation("API Clients: {Data}", _json.Pretty(clients));
+
+		var nc = await _api.ApiClients.Create("test-client-v1", token: token);
+		_logger.LogInformation("New Client: {Data}", _json.Pretty(nc));
+
+		var id = nc.Data?.Id;
+		if (id is null)
+		{
+			_logger.LogError("Failed to create new API client: {Data}", _json.Pretty(nc.MetaData));
+			return false;
+		}
+
+		var delete = await _api.ApiClients.Delete(id, token: token);
+		_logger.LogInformation("Deleted Client: {Data}", _json.Pretty(delete.MetaData));
+		return true;
+	}
+
 	#region Internal methods
 	public IEnumerable<MethodInfo> Methods()
 	{
