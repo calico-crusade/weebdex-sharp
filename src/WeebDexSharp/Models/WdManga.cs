@@ -104,7 +104,7 @@ public class WdManga : WdMangaBase
 		/// The information about the manga's comment thread
 		/// </summary>
 		[JsonPropertyName("thread")]
-		public MangaThread Thread { get; set; } = new();
+		public WdThread Thread { get; set; } = new();
 
 		/// <summary>
 		/// All of the related manga
@@ -129,24 +129,6 @@ public class WdManga : WdMangaBase
 		/// </summary>
 		[JsonPropertyName("ext")]
 		public string Extension { get; set; } = string.Empty;
-	}
-
-	/// <summary>
-	/// The manga's comment thread
-	/// </summary>
-	public class MangaThread
-	{
-		/// <summary>
-		/// The ID of the thread
-		/// </summary>
-		[JsonPropertyName("id")]
-		public string Id { get; set; } = string.Empty;
-
-		/// <summary>
-		/// Whether or not comments are locked on the manga
-		/// </summary>
-		[JsonPropertyName("locked")]
-		public bool Locked { get; set; }
 	}
 
 	/// <summary>

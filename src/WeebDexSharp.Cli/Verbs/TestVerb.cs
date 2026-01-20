@@ -103,6 +103,16 @@ public class TestVerb(
 		return true;
 	}
 
+	public async Task<bool> Groups(CancellationToken token)
+	{
+		var groups = await _api.Groups.List(name: "Asmodeus", token: token);
+		_logger.LogInformation("Groups: {Data}", _json.Pretty(groups));
+
+		var group = await _api.Groups.Get("jlyvfgupyv", token: token);
+		_logger.LogInformation("Group: {Data}", _json.Pretty(group));
+		return true;
+	}
+
 	#region Internal methods
 	public IEnumerable<MethodInfo> Methods()
 	{

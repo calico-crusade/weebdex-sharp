@@ -22,6 +22,9 @@ public interface IWeebDex
 
 	/// <inheritdoc cref="IWdApiCoverService" />
 	IWdApiCoverService Covers { get; }
+
+	/// <inheritdoc cref="IWdApiGroupService" />
+	IWdApiGroupService Groups { get; }
 }
 
 /// <inheritdoc cref="IWeebDex" />
@@ -31,7 +34,8 @@ public class WeebDex(
 	IWdApiMangaService _manga,
 	IWdApiStatisticsService _stats,
 	IWdApiApiClientService _apiClients,
-	IWdApiCoverService _covers) : IWeebDex
+	IWdApiCoverService _covers,
+	IWdApiGroupService _groups) : IWeebDex
 {
 	/// <inheritdoc />
 	public IWdApiAuthorService Authors { get; } = _author;
@@ -50,6 +54,9 @@ public class WeebDex(
 
 	/// <inheritdoc />
 	public IWdApiCoverService Covers { get; } = _covers;
+
+	/// <inheritdoc />
+	public IWdApiGroupService Groups { get; } = _groups;
 
 	/// <summary>
 	/// Creates an isolated instance of the WeebDex API 

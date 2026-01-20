@@ -120,7 +120,7 @@ public class WdChapter : WdChapterBase
 		/// The information about the chapter's comment thread
 		/// </summary>
 		[JsonPropertyName("thread")]
-		public ChapterThread Thread { get; set; } = new();
+		public WdThread Thread { get; set; } = new();
 	}
 
 	/// <summary>
@@ -133,24 +133,6 @@ public class WdChapter : WdChapterBase
 		/// </summary>
 		[JsonPropertyName("roles")]
 		public string[] Roles { get; set; } = [];
-	}
-
-	/// <summary>
-	/// The chapter's comment thread
-	/// </summary>
-	public class ChapterThread
-	{
-		/// <summary>
-		/// The ID of the thread
-		/// </summary>
-		[JsonPropertyName("id")]
-		public string Id { get; set; } = string.Empty;
-
-		/// <summary>
-		/// Whether or not comments are locked on the chapter
-		/// </summary>
-		[JsonPropertyName("locked")]
-		public bool Locked { get; set; }
 	}
 }
 
