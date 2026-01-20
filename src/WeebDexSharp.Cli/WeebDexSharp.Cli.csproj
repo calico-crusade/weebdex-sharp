@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AssemblyName>wd-cli</AssemblyName>
+		<UserSecretsId>15bc4a61-3a0b-43d6-9815-fa10bdc1a035</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CardboardBox.Setup" Version="2.0.0" />
+		<PackageReference Include="CsvHelper" Version="33.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+		<PackageReference Include="Spectre.Console" Version="0.54.0" />
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\WeebDexSharp\WeebDexSharp.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="./../global.cs" />
+	</ItemGroup>
+
+</Project>

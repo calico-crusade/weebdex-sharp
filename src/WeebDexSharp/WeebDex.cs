@@ -1,0 +1,48 @@
+﻿namespace WeebDexSharp;
+
+/// <summary>
+/// Represents an instance of the WeebDex API.
+/// </summary>
+public interface IWeebDex
+{
+	/// <inheritdoc cref="IWdApiAuthorService" />
+	IWdApiAuthorService Authors { get; }
+
+	/// <inheritdoc cref="IWdApiChapterService" />
+	IWdApiChapterService Chapters { get; }
+
+	/// <inheritdoc cref="IWdApiMangaService" />
+	IWdApiMangaService Manga { get; }
+}
+
+/// <inheritdoc cref="IWeebDex" />
+public class WeebDex(
+	IWdApiAuthorService _author,
+	IWdApiChapterService _chapter,
+	IWdApiMangaService _manga) : IWeebDex
+{
+	/// <inheritdoc />
+	public IWdApiAuthorService Authors { get; } = _author;
+
+	/// <inheritdoc />
+	public IWdApiChapterService Chapters { get; } = _chapter;
+
+	/// <inheritdoc />
+	public IWdApiMangaService Manga { get; } = _manga;
+
+	/// <summary>
+	/// Creates an isolated instance of the WeebDex API 
+	/// </summary>
+	/// <param name="config">The optional configuration action</param>
+	/// <param name="services">The optional service collection to use</param>
+	/// <returns>The instance of the WeebDex API</returns>
+	public static IWeebDex Create(
+		Action<IWeebDexBuilder>? config = null,
+		IServiceCollection? services = null)
+	{
+		return (services ?? new ServiceCollection())
+			.AddWeebDex(config)
+			.BuildServiceProvider()
+			.GetRequiredService<IWeebDex>();
+	}
+}

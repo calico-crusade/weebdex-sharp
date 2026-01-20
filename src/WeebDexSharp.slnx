@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.github/workflows/cli.yml" />
+    <File Path="../.github/workflows/main.yml" />
+    <File Path="../.gitignore" />
+    <File Path="../icon.jpg" />
+    <File Path="../LICENSE" />
+    <File Path="../README.md" />
+  </Folder>
+  <Project Path="WeebDexSharp.Cli/WeebDexSharp.Cli.csproj" Id="eec7ff76-e970-4b3e-bcde-a7b5fc7f741e" />
+  <Project Path="WeebDexSharp.Utilities/WeebDexSharp.Utilities.csproj" Id="19c7437e-563c-4e0a-ae5f-2dbbdc77114b" />
+  <Project Path="WeebDexSharp/WeebDexSharp.csproj" />
+</Solution>

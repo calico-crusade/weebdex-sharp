@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+env:
+  PROJECT: "WeebDexSharp"
+  #PROJECT_UTILS: "WeebDexSharp.Utilities"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.x'
+
+      - name: Get version
+        id: version
+        run: |
+          echo "version-without-v=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "csproj=./src/${{ env.PROJECT }}/${{ env.PROJECT }}.csproj" >> $GITHUB_OUTPUT
+          echo "csproj-utils=./src/${{ env.PROJECT_UTILS }}/${{ env.PROJECT_UTILS }}.csproj" >> $GITHUB_OUTPUT
+     
+      - name: Publish Main Nuget Package
+        id: publish_nuget_main
+        uses: cardboards-box/publish-nuget@v1.0.0
+        with:
+          PROJECT_FILE_PATH: ${{ steps.version.outputs.csproj }}
+          TAG_COMMIT: false
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          VERSION_STATIC: ${{ steps.version.outputs.version-without-v }}
+     
+      # - name: Publish Utilities Nuget Package
+      #   id: publish_nuget_utilities
+      #   uses: cardboards-box/publish-nuget@v1.0.0
+      #   with:
+      #     PROJECT_FILE_PATH: ${{ steps.version.outputs.csproj-utils }}
+      #     TAG_COMMIT: false
+      #     NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+      #     VERSION_STATIC: ${{ steps.version.outputs.version-without-v }}
