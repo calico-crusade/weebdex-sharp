@@ -58,16 +58,16 @@ public class TestVerb(
 
 	public async Task<bool> Stats(CancellationToken token)
 	{
-		var chapter = await _api.Statistics.Chapter("l3nm5fbler");
+		var chapter = await _api.Statistics.Chapter("l3nm5fbler", token: token);
 		_logger.LogInformation("Chapter Stats: {Data}", _json.Pretty(chapter));
 
-		var manga = await _api.Statistics.Manga("2mkslp3v5e");
+		var manga = await _api.Statistics.Manga("2mkslp3v5e", token: token);
 		_logger.LogInformation("Manga Stats: {Data}", _json.Pretty(manga));
 
-		var group = await _api.Statistics.Group("blebj9twem");
+		var group = await _api.Statistics.Group("blebj9twem", token: token);
 		_logger.LogInformation("Group Stats: {Data}", _json.Pretty(group));
 
-		var user = await _api.Statistics.User("qlo3v9w4ek");
+		var user = await _api.Statistics.User("qlo3v9w4ek", token: token);
 		_logger.LogInformation("User Stats: {Data}", _json.Pretty(user));
 		return true;
 	}
@@ -89,6 +89,17 @@ public class TestVerb(
 
 		var delete = await _api.ApiClients.Delete(id, token: token);
 		_logger.LogInformation("Deleted Client: {Data}", _json.Pretty(delete.MetaData));
+		return true;
+	}
+
+	public async Task<bool> Covers(CancellationToken token)
+	{
+		var covers = await _api.Covers.ForManga("2mkslp3v5e", token);
+		_logger.LogInformation("Covers: {Data}", _json.Pretty(covers));
+
+		var cover = await _api.Covers.Get("x3t1zreua9", token);
+		_logger.LogInformation("Cover: {Data}", _json.Pretty(cover));
+
 		return true;
 	}
 

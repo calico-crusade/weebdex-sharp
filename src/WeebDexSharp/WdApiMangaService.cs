@@ -94,10 +94,30 @@ public interface IWdApiMangaService
 	/// <param name="token">The cancellation token</param>
 	/// <returns>The aggregate information</returns>
 	Task<WeebDexResponse<WdMangaAggregates>> Aggregate(string id, string[]? languages = null, CancellationToken token = default);
+
+	/// <summary>
+	/// Gets all of the covers for the given manga
+	/// </summary>
+	/// <param name="id">The ID of the manga</param>
+	/// <param name="token">The cancellation token</param>
+	/// <returns>The response</returns>
+	/// <remarks>This is a macro for <see cref="IWdApiCoverService.ForManga(string, CancellationToken)"/></remarks>
+	Task<WeebDexResponse<WdCover[]>> Covers(string id, CancellationToken token = default);
+
+	/// <summary>
+	/// Gets the stats for a specific manga
+	/// </summary>
+	/// <param name="id">The ID of the manga</param>
+	/// <param name="token">The cancellation token for the request</param>
+	/// <returns>The ratings</returns>
+	/// <remarks>This is a macro for <see cref="IWdApiStatisticsService.Manga(string, CancellationToken)"/></remarks>
+	Task<WeebDexResponse<WdMangaRating>> Statistics(string id, CancellationToken token = default);
 }
 
 internal class WdApiMangaService(
-	IWdApiService _api) : IWdApiMangaService
+	IWdApiService _api,
+	IWdApiCoverService _covers,
+	IWdApiStatisticsService _stats) : IWdApiMangaService
 {
 	public Task<WeebDexResponse<WdMangaAggregates>> Aggregate(string id, string[]? languages = null, CancellationToken token = default)
 	{
@@ -111,6 +131,11 @@ internal class WdApiMangaService(
 	{
 		filter ??= new();
 		return _api.Get<WdChapterList>($"/manga/{id}/chapters?{filter.BuildQuery()}", token: token);
+	}
+
+	public Task<WeebDexResponse<WdCover[]>> Covers(string id, CancellationToken token = default)
+	{
+		return _covers.ForManga(id, token);
 	}
 
 	public Task<WeebDexResponse<WdManga.RelatedManga>> CreateRelation(string id, WdManga.CreateRelation relation, Credentials? creds = null, CancellationToken token = default)
@@ -151,6 +176,11 @@ internal class WdApiMangaService(
 	{
 		filter ??= new();
 		return _api.Get<WdMangaList>($"/manga?{filter.BuildQuery()}", token: token);
+	}
+
+	public Task<WeebDexResponse<WdMangaRating>> Statistics(string id, CancellationToken token = default)
+	{
+		return _stats.Manga(id, token);
 	}
 
 	public Task<WdMangaList> Top(ContentRating[]? rating = null, int limit = 100, int page = 1, TimeFrame time = TimeFrame.SevenDays, bool rankViews = true, CancellationToken token = default)

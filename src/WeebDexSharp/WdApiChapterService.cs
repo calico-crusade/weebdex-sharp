@@ -66,10 +66,20 @@ public interface IWdApiChapterService
 	/// <param name="token">The cancellation token</param>
 	/// <returns>The response from the delete operation</returns>
 	Task<WeebDexResponse> Delete(string id, Credentials? creds = null, CancellationToken token = default);
+
+	/// <summary>
+	/// Gets the stats for a specific chapter
+	/// </summary>
+	/// <param name="id">The ID of the chapter</param>
+	/// <param name="token">The cancellation token for the request</param>
+	/// <returns>The ratings</returns>
+	/// <remarks>This is a macro for <see cref="IWdApiStatisticsService.Chapter(string, CancellationToken)"/></remarks>
+	Task<WeebDexResponse<WdChapterRating>> Statistics(string id, CancellationToken token = default);
 }
 
 internal class WdApiChapterService(
-	IWdApiService _api) : IWdApiChapterService
+	IWdApiService _api,
+	IWdApiStatisticsService _stats) : IWdApiChapterService
 {
 	public Task<WeebDexResponse<WdChapter>> Get(string id, CancellationToken token)
 	{
@@ -120,5 +130,10 @@ internal class WdApiChapterService(
 			.Add("contentRating", rating ?? [])
 			.Build();
 		return _api.Get<WdChapterList>($"/chapter/top?{filter}", token: token);
+	}
+
+	public Task<WeebDexResponse<WdChapterRating>> Statistics(string id, CancellationToken token = default)
+	{
+		return _stats.Chapter(id, token);
 	}
 }
