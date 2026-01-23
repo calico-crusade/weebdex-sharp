@@ -1,4 +1,6 @@
-﻿namespace WeebDexSharp.Helpers;
+﻿using System.Threading.RateLimiting;
+
+namespace WeebDexSharp.Helpers;
 
 /// <summary>
 /// An implementation for executing API requests against WeebDex
@@ -214,6 +216,7 @@ internal class WdApiService(
 	IApiConfigurationService _api,
 	ICredentialsService? _creds,
 	WdEventsService _events,
+	[FromKeyedServices(WeebDexBuilder.SK_LIMITER)] RateLimiter _limiter,
 	IWdRequestConfigurationService? _config = null) : IWdApiService
 {
 	public async Task<bool> Auth(HttpRequestMessage request, bool required, Credentials? creds)
@@ -238,27 +241,25 @@ internal class WdApiService(
 
 	public void FillMetaData(string url, HttpResponseMessage resp, HttpRequestMessage request, RequestMetaData data)
 	{
-		var rateLimits = new RateLimit();
+		data.RateLimits ??= new();
 
 		//TODO: Figure this shit out for weebdex, this is for mangadex
 		if (resp.Headers.TryGetValues("X-RateLimit-Limit", out var strLimit) &&
 			int.TryParse(strLimit.FirstOrDefault(), out var limit))
-			rateLimits.Limit = limit;
+			data.RateLimits.Limit = limit;
 
 		if (resp.Headers.TryGetValues("X-RateLimit-Remaining", out var strRemaining) &&
 			int.TryParse(strRemaining.FirstOrDefault(), out var remaining))
-			rateLimits.Remaining = remaining;
+			data.RateLimits.Remaining = remaining;
 
 		if (resp.Headers.TryGetValues("X-RateLimit-Retry-After", out var strRetry) &&
 			double.TryParse(strRetry.FirstOrDefault(), out var retry))
-			rateLimits.RetryAfter = DateTime.UnixEpoch.AddSeconds(retry);
+			data.RateLimits.RetryAfter = DateTime.UnixEpoch.AddSeconds(retry);
 
-		data.RateLimits = rateLimits;
+		_events.OnRateLimitDataReceived(url, data.RateLimits);
 
-		_events.OnRateLimitDataReceived(url, rateLimits);
-
-		if (rateLimits.IsLimited)
-			_events.OnRateLimitExceeded(url, rateLimits);
+		if (data.RateLimits.IsLimited)
+			_events.OnRateLimitExceeded(url, data.RateLimits);
 
 		data.Response.StatusCode = resp.StatusCode;
 		data.Response.ReasonPhrase = resp.ReasonPhrase;
@@ -287,7 +288,7 @@ internal class WdApiService(
 		return request;
 	}
 
-	public async Task<HttpResponseMessage> DoRequest(RequestMetaData meta, HttpRequestMessage request, string url, CancellationToken token)
+	public async Task<HttpResponseMessage> GetResponse(RequestMetaData meta, HttpRequestMessage request, string url, CancellationToken token)
 	{
 		var watch = Stopwatch.StartNew();
 
@@ -299,6 +300,27 @@ internal class WdApiService(
 
 		watch.Stop();
 		meta.Response.RequestElapsed = watch.Elapsed;
+		return response;
+	}
+
+	public async Task<HttpResponseMessage> HandleRequest(RequestMetaData meta, HttpRequestMessage request, string url, CancellationToken token)
+	{
+		if (!_api.RateLimitEnable) 
+			return await GetResponse(meta, request, url, token);
+
+		meta.RateLimits ??= new RateLimit();
+		meta.RateLimits.Limit = _api.RateLimitLeases;
+		meta.RateLimits.Remaining = _api.RateLimitLeases;
+
+		using var lease = await _limiter.AcquireAsync(1, token);
+		if (lease.IsAcquired)
+			return await GetResponse(meta, request, url, token);
+
+		var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+		meta.RateLimits.Remaining = 0;
+		if (lease.TryGetMetadata(MetadataName.RetryAfter, out var after))
+			meta.RateLimits.RetryAfter = DateTime.UtcNow.Add(after);
+
 		return response;
 	}
 
@@ -350,7 +372,7 @@ internal class WdApiService(
 			url = WrapUrl(url);
 
 			using var request = await CreateRequest(meta, url, method, content, authRequired, creds);
-			using var response = await DoRequest(meta, request, url, token);
+			using var response = await HandleRequest(meta, request, url, token);
 			data = await HandleResponse<T>(meta, response, url);
 
 			if (_api.ThrowOnError)

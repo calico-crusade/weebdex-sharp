@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Threading.RateLimiting;
 
 namespace WeebDexSharp.Cli.Verbs;
 
@@ -12,8 +13,80 @@ public class TestOptions
 public class TestVerb(
 	IWeebDex _api,
 	IWdJsonService _json,
+	IApiConfigurationService _config,
 	ILogger<TestVerb> logger) : BooleanVerb<TestOptions>(logger)
 {
+	public async Task<bool> RateLimits(CancellationToken token)
+	{
+		async Task DoRequest(RateLimiter limit, int iterator, CancellationToken token)
+		{
+			using var lease = await limit.AcquireAsync(1, token);
+			if (!lease.IsAcquired)
+			{
+				_logger.LogWarning("Request #{Iterator} was not acquired at {Time}", iterator, DateTimeOffset.UtcNow);
+				return;
+			}
+
+			_logger.LogInformation("Request #{Iterator} completed at {Time}", iterator, DateTimeOffset.UtcNow);
+		}
+
+		var rateOpts = new TokenBucketRateLimiterOptions
+		{
+			TokenLimit = _config.RateLimitLeases,
+			QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+			QueueLimit = _config.RateLimitQueue ? int.MaxValue : 0,
+			ReplenishmentPeriod = _config.RateLimitRefresh,
+			TokensPerPeriod = _config.RateLimitLeases,
+			AutoReplenishment = true,
+		};
+		using var limiter = new TokenBucketRateLimiter(rateOpts);
+
+		var pars = new ParallelOptions
+		{
+			MaxDegreeOfParallelism = int.MaxValue,
+			CancellationToken = token
+		};
+
+		_logger.LogInformation("Starting rate limit test with {Leases} leases every {Period}, queue limit: {QueueLimit}", 
+			_config.RateLimitLeases, 
+			_config.RateLimitRefresh, 
+			_config.RateLimitQueue ? "unlimited" : "0");
+		await Parallel.ForEachAsync(Enumerable.Range(0, 100), pars, async (i, token) =>
+		{
+			await DoRequest(limiter, i, token);
+		});
+
+		_logger.LogInformation("Completed rate limit test.");
+		return true;
+	}
+
+	public async Task<bool> MangaChaptersRateLimits(CancellationToken token)
+	{
+		ContentRating[] ratings = [ContentRating.Safe, ContentRating.Suggestive, ContentRating.Erotica, ContentRating.Pornographic];
+		var top = await _api.Manga.Top(ratings, token: token);
+		if (!top.Succeeded)
+		{
+			_logger.LogError("Failed to get top manga: {Data}", _json.Pretty(top.MetaData));
+			return false;
+		}
+
+		foreach(var manga in top.Data)
+		{
+			_logger.LogInformation("Found manga: {Manga} ({Id}). Loading chapters...", manga.Title, manga.Id);
+			var chapters = await _api.Manga.Chapters(manga.Id, token: token);
+			if (!chapters.Succeeded)
+			{
+				_logger.LogError("Failed to get chapters for manga {Manga} ({Id}): {Data}", manga.Title, manga.Id, _json.Pretty(chapters.MetaData));
+				continue;
+			}
+
+			_logger.LogInformation("Manga {Manga} ({Id}) has {Count} chapters.", manga.Title, manga.Id, chapters.Data.Length);
+
+		}
+
+		return true;
+	}
+
 	public async Task<bool> Authors(CancellationToken token)
 	{
 		var authors = await _api.Authors.List(token: token);
@@ -35,6 +108,20 @@ public class TestVerb(
 		_logger.LogInformation("Chapters: {Data}", _json.Pretty(chapters));
 		var chapter = await _api.Chapters.Get("9v6c0zerlu", token);
 		_logger.LogInformation("Chapter: {Data}", _json.Pretty(chapter));
+		return true;
+	}
+
+	public async Task<bool> ChapterFeed(CancellationToken token)
+	{
+		var filter = new WdChapterFilter
+		{
+			TranslatedLanguagesInclude = ["en"],
+			Rating = [ContentRating.Safe, ContentRating.Suggestive, ContentRating.Erotica, ContentRating.Pornographic],
+			Limit = 100,
+			Page = 1
+		};
+		var chapters = await _api.Chapters.Feed(filter, token);
+		_logger.LogInformation("Chapter Feed: {Data}", _json.Pretty(chapters));
 		return true;
 	}
 

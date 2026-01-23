@@ -92,7 +92,6 @@ public class WdChapter : WdChapterBase
 		public int Version { get; set; }
 	}
 
-
 	/// <summary>
 	/// Represents all of the data related to the chapter
 	/// </summary>
@@ -174,19 +173,7 @@ public class WdChapterPartial : WdChapterBase
 		/// The manga the chapter belongs to
 		/// </summary>
 		[JsonPropertyName("manga")]
-		public TrimmedManga Manga { get; set; } = new();
-	}
-
-	/// <summary>
-	/// A trimmed down version of the manga data
-	/// </summary>
-	public class TrimmedManga
-	{
-		/// <summary>
-		/// The ID of the manga
-		/// </summary>
-		[JsonPropertyName("id")]
-		public string Id { get; set; } = string.Empty;
+		public WdMangaPartial Manga { get; set; } = new();
 	}
 }
 

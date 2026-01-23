@@ -33,7 +33,7 @@ public class WeebDex(
 	IWdApiChapterService _chapter,
 	IWdApiMangaService _manga,
 	IWdApiStatisticsService _stats,
-	IWdApiApiClientService _apiClients,
+	IWdApiApiClientService _clients,
 	IWdApiCoverService _covers,
 	IWdApiGroupService _groups) : IWeebDex
 {
@@ -50,7 +50,7 @@ public class WeebDex(
 	public IWdApiStatisticsService Statistics { get; } = _stats;
 	
 	/// <inheritdoc />
-	public IWdApiApiClientService ApiClients { get; } = _apiClients;
+	public IWdApiApiClientService ApiClients { get; } = _clients;
 
 	/// <inheritdoc />
 	public IWdApiCoverService Covers { get; } = _covers;

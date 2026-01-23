@@ -38,6 +38,7 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
 		<PackageReference Include="System.Linq.Async" Version="7.0.0" />
 		<PackageReference Include="System.Text.Json" Version="10.0.2" />
+		<PackageReference Include="System.Threading.RateLimiting" Version="10.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>

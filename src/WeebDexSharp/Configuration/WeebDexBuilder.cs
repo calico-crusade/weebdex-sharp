@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Threading.RateLimiting;
 
 namespace WeebDexSharp.Configuration;
 
@@ -29,8 +30,16 @@ public interface IWeebDexBuilder
 	/// <param name="apiUrl">The URL for the WeebDex API</param>
 	/// <param name="userAgent">The User-Agent header to send with requests</param>
 	/// <param name="throwOnError">Whether or not to throw an exception if the API returns an error</param>
+	/// <param name="rateLimitsEnabled">Whether or not to enable automatic rate limit handling at the API layer</param>
+	/// <param name="rateLimitsLeases">The number of requests that can be done in parallel</param>
+	/// <param name="rateLimitsQueue">Whether or not to queue requests when the rate limit is exceeded (<see langword="true"/>) 
+	/// or to fail the request immediately with <see cref="HttpStatusCode.TooManyRequests"/> (<see langword="false"/>)</param>
+	/// <param name="rateLimitsRefresh">The duration to wait before refreshing the rate limits</param>
 	/// <returns>The current builder for fluent method chaining</returns>
-	IWeebDexBuilder WithApiConfig(string? apiUrl = null, string? userAgent = null, bool throwOnError = false);
+	IWeebDexBuilder WithApiConfig(
+		string? apiUrl = null, string? userAgent = null, bool throwOnError = false,
+		bool? rateLimitsEnabled = null, bool? rateLimitsQueue = null,
+		int? rateLimitsLeases = null, TimeSpan? rateLimitsRefresh = null);
 
 	/// <summary>
 	/// Uses the given configuration for the WeebDex API client
@@ -94,6 +103,8 @@ public interface IWeebDexBuilder
 internal class WeebDexBuilder(
 	IServiceCollection _services) : IWeebDexBuilder
 {
+	public const string SK_LIMITER = "weeb-dex-ratelimiter";
+
 	#region Api Config
 	public IWeebDexBuilder WithApiConfig(IApiConfigurationService config)
 	{
@@ -101,17 +112,15 @@ internal class WeebDexBuilder(
 		return this;
 	}
 
-	public IWeebDexBuilder WithApiConfig(string? apiUrl = null, string? userAgent = null, bool throwOnError = false)
+	public IWeebDexBuilder WithApiConfig(
+		string? apiUrl = null, string? userAgent = null, bool throwOnError = false,
+		bool? rateLimitsEnabled = null, bool? rateLimitsQueue = null,
+		int? rateLimitsLeases = null, TimeSpan? rateLimitsRefresh = null)
 	{
-		return WithApiConfig(c =>
-		{
-			c.WithApiUrl(apiUrl)
-			 .WithUserAgent(userAgent);
-			if (throwOnError)
-				c.ThrowExceptionOnError();
-			else
-				c.FailGracefully();
-		});
+		return WithApiConfig(ApiConfigurationService.FromHardCoded(
+			apiUrl, userAgent, throwOnError, 
+			rateLimitsEnabled, rateLimitsQueue, 
+			rateLimitsLeases, rateLimitsRefresh));
 	}
 
 	public IWeebDexBuilder WithApiConfig(Action<ApiConfigurationBuilder> config)
@@ -198,5 +207,19 @@ internal class WeebDexBuilder(
 				: ApiConfigurationService.FromConfiguration(config);
 		});
 
+		_services.TryAddKeyedSingleton<RateLimiter>(SK_LIMITER, (sp, _) =>
+		{
+			var config = sp.GetRequiredService<IApiConfigurationService>();
+			var options = new TokenBucketRateLimiterOptions
+			{
+				TokenLimit = config.RateLimitLeases,
+				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+				QueueLimit = config.RateLimitQueue ? int.MaxValue : 0,
+				ReplenishmentPeriod = config.RateLimitRefresh,
+				TokensPerPeriod = config.RateLimitLeases,
+				AutoReplenishment = true,
+			};
+			return new TokenBucketRateLimiter(options);
+		});
 	}
 }

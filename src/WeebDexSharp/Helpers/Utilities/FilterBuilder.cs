@@ -46,12 +46,13 @@ public class FilterBuilder
 	/// <param name="items">The values of the parameter</param>
 	/// <param name="shouldLower">Whether or not the values should be lower cased</param>
 	/// <returns>The current builder for chaining</returns>
-	public FilterBuilder Add<T>(string key, T[] items, bool shouldLower = false)
+	public FilterBuilder Add<T>(string key, T[] items, bool? shouldLower = null)
 	{
+		var doLower = shouldLower ?? typeof(T).IsEnum;
 		return Add(key, items
 			.Select(t => t?.ToString() ?? "")
 			.Where(t => !string.IsNullOrEmpty(t))
-			.Select(t => shouldLower ? t.ToLower() : t)
+			.Select(t => doLower ? t.ToLower() : t)
 			.ToArray());
 	}
 
