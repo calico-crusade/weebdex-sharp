@@ -214,9 +214,9 @@ internal class WdApiService(
 	IHttpClientFactory _factory,
 	IWdJsonService _json,
 	IApiConfigurationService _api,
-	ICredentialsService? _creds,
 	WdEventsService _events,
 	[FromKeyedServices(WeebDexBuilder.SK_LIMITER)] RateLimiter _limiter,
+	ICredentialsService? _creds = null,
 	IWdRequestConfigurationService? _config = null) : IWdApiService
 {
 	public async Task<bool> Auth(HttpRequestMessage request, bool required, Credentials? creds)
